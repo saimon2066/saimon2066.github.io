@@ -1,0 +1,1250 @@
+/* ------------------------------------------------------------------
+   Design tokens
+   Palette: warm CRT phosphor. Dark warm-brown base, amber phosphor
+   accent, paper-ish foreground. Deliberately NOT the usual
+   black + acid green terminal look.
+------------------------------------------------------------------ */
+:root {
+  --bg: #12100d;
+  --bg-raised: #191510;
+  --line: #2f2820;
+  --line-soft: #221d17;
+
+  --text: #ddd5c7;
+  --text-dim: #8e8578;
+  --text-faint: #5f584e;
+
+  /* three steps on purpose: --amber is reserved for things you can click or
+     that report state, --amber-dim for their quieter edges, --amber-deep for
+     pure decoration. When every accent was full amber, nothing read as an
+     accent. */
+  --amber: #ffa53c;
+  --amber-dim: #b8722a;
+  --amber-deep: #7d4f1e;
+  --amber-glow: rgba(255, 165, 60, 0.14);
+
+  --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  --step--1: 0.78rem;
+  --step-0: 0.95rem;
+  --step-1: 1.15rem;
+  --step-2: 1.55rem;
+  --step-3: clamp(2rem, 6vw, 3.2rem);
+  --step-4: clamp(3.4rem, 13vw, 6.5rem);
+
+  --rail: 8.5rem;
+  --measure: 62ch;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: var(--step-0);
+  font-weight: 400;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Faint scanline wash over the whole page: ties the CRT hero to the
+   rest of the document instead of leaving it as one isolated gimmick. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  background:
+    radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(0, 0, 0, 0.38) 100%),
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255, 232, 200, 0.026) 0px,
+      rgba(255, 232, 200, 0.026) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+}
+
+a {
+  color: var(--text);
+  text-decoration-color: var(--amber-dim);
+  text-underline-offset: 0.25em;
+}
+
+a:hover {
+  color: var(--amber);
+}
+
+/* one focus treatment everywhere, sized so it never touches the glyphs */
+:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+  border-radius: 1px;
+}
+
+.btn:focus-visible,
+.gallery__thumb:focus-visible,
+.sound:focus-visible {
+  outline-offset: 3px;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 700;
+  line-height: 1.1;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+p {
+  margin: 0 0 1rem;
+  max-width: var(--measure);
+}
+
+/* ------------------------------------------------------------------
+   Shell
+------------------------------------------------------------------ */
+.shell {
+  max-width: 68rem;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.scramble__char {
+  color: var(--amber-deep);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--amber);
+  color: #12100d;
+  padding: 0.5rem 1rem;
+  z-index: 200;
+}
+
+.skip-link:focus {
+  left: 1rem;
+  top: 1rem;
+}
+
+/* ------------------------------------------------------------------
+   Section: the left rail carries a path label, which doubles as the
+   navigation anchor name. It encodes "where am I" rather than
+   decorating the heading.
+------------------------------------------------------------------ */
+.section {
+  scroll-margin-top: 4.5rem;
+  display: grid;
+  grid-template-columns: var(--rail) minmax(0, 1fr);
+  gap: 0 2rem;
+  padding: 5rem 0;
+  border-top: 1px solid var(--line);
+}
+
+/* the projects section is the point of the page, so it gets noticeably more
+   room around it than about, skills or contact */
+#projects.section {
+  padding: 7rem 0 6.5rem;
+}
+
+.section__rail {
+  color: var(--text-faint);
+  transition: color 260ms ease;
+  font-size: var(--step--1);
+  padding-top: 0.45rem;
+  position: sticky;
+  top: 5rem;
+  align-self: start;
+  height: fit-content;
+}
+
+.section__rail.is-active {
+  color: var(--amber);
+}
+
+.section__title {
+  font-size: var(--step-2);
+  margin-bottom: 1.75rem;
+  color: var(--text);
+}
+
+@media (max-width: 720px) {
+  .section {
+    /* minmax(0,...) not 1fr: a plain 1fr column takes its min size from
+       the content, which lets the max-content marquee track stretch the
+       whole page sideways */
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+    padding: 3.5rem 0;
+  }
+
+  .section__rail {
+    position: static;
+    padding-top: 0;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Nav
+------------------------------------------------------------------ */
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  backdrop-filter: blur(6px);
+  background: rgba(18, 16, 13, 0.72);
+  border-bottom: 1px solid transparent;
+  transition: border-color 200ms ease, background 200ms ease;
+}
+
+.nav[data-scrolled='true'] {
+  border-bottom-color: var(--line);
+}
+
+.nav__inner {
+  max-width: 68rem;
+  margin: 0 auto;
+  padding: 0.7rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.nav__mark {
+  color: var(--amber);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+}
+
+.nav__links {
+  display: flex;
+  gap: 1.25rem;
+  font-size: var(--step--1);
+  color: var(--text-dim);
+}
+
+.sound {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  padding: 0.25rem 0.35rem;
+  margin-left: 0.4rem;
+  border: 1px solid transparent;
+  background: none;
+  cursor: pointer;
+  color: var(--text-faint);
+  transition: color 200ms ease, border-color 200ms ease;
+}
+
+.sound:hover {
+  color: var(--amber);
+}
+
+.sound.is-on {
+  color: var(--amber);
+}
+
+.sound__bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+}
+
+.sound__bars i {
+  display: block;
+  width: 2px;
+  background: currentColor;
+  height: 4px;
+  transition: height 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sound__bars i:nth-child(2) {
+  height: 7px;
+}
+
+.sound__bars i:nth-child(3) {
+  height: 5px;
+}
+
+/* the bars only stand up when sound is actually on, so the control shows its
+   state without a label */
+.sound.is-on .sound__bars i:nth-child(1) {
+  height: 7px;
+}
+
+.sound.is-on .sound__bars i:nth-child(2) {
+  height: 12px;
+}
+
+.sound.is-on .sound__bars i:nth-child(3) {
+  height: 9px;
+}
+
+.nav__progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: var(--amber);
+  transform-origin: left;
+  transform: scaleX(0);
+}
+
+.nav__links a {
+  text-decoration: none;
+  color: var(--text-dim);
+}
+
+.nav__links a {
+  position: relative;
+}
+
+.nav__links a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -3px;
+  height: 1px;
+  background: var(--amber-dim);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 240ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nav__links a:hover {
+  color: var(--amber);
+}
+
+.nav__links a:hover::after,
+.nav__links a.is-active::after {
+  transform: scaleX(1);
+}
+
+.nav__links a.is-active {
+  color: var(--amber);
+}
+
+@media (max-width: 560px) {
+  .nav__links {
+    gap: 0.75rem;
+    font-size: 0.72rem;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Hero
+------------------------------------------------------------------ */
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.hero__bg {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+}
+
+/* Static fallback shown when WebGL is off, motion is reduced,
+   or the viewport is small enough that a live shader is a waste. */
+.hero__bg--static {
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255, 165, 60, 0.05) 0px,
+      rgba(255, 165, 60, 0.05) 1px,
+      transparent 1px,
+      transparent 4px
+    ),
+    radial-gradient(110% 70% at 15% 15%, rgba(255, 165, 60, 0.18), transparent 62%),
+    radial-gradient(80% 60% at 95% 95%, rgba(255, 165, 60, 0.08), transparent 60%),
+    var(--bg);
+}
+
+.hero__veil {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    to top,
+    var(--bg) 4%,
+    rgba(18, 16, 13, 0.82) 38%,
+    rgba(18, 16, 13, 0.5) 100%
+  );
+}
+
+.hero__inner {
+  width: 100%;
+  /* keep the horizontal padding from .shell: this shorthand would
+     otherwise wipe it out and the text would hit the screen edge */
+  padding: 8rem 1.5rem 4rem;
+}
+
+.hero__name {
+  font-size: var(--step-4);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 0.92;
+  margin: 0 0 1.25rem;
+}
+
+.hero__name span {
+  display: block;
+}
+
+.hero__role {
+  font-size: var(--step-1);
+  color: var(--amber);
+  margin: 0 0 0.75rem;
+}
+
+/* ShinyText's effect without pulling in an animation library: a wide gradient
+   clipped to the glyphs, slid across on a loop. */
+.shine {
+  background-image: linear-gradient(
+    120deg,
+    var(--amber-dim) 0%,
+    var(--amber) 40%,
+    #ffcf8f 50%,
+    var(--amber) 60%,
+    var(--amber-dim) 100%
+  );
+  background-size: 260% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: shine 6.5s linear infinite;
+}
+
+@keyframes shine {
+  from {
+    background-position: 160% center;
+  }
+  to {
+    background-position: -60% center;
+  }
+}
+
+.hero__blurb {
+  color: var(--text-dim);
+  max-width: 46ch;
+  margin-bottom: 2rem;
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+/* hero mobile overrides live here, after the hero rules: a media query
+   earlier in the file loses to a later plain rule regardless of viewport */
+@media (max-width: 640px) {
+  .hero {
+    min-height: 86svh;
+  }
+
+  .hero__inner {
+    padding: 6rem 1.5rem 3rem;
+  }
+}
+
+.hero__scroll {
+  margin-top: 3rem;
+  font-size: var(--step--1);
+  color: var(--text-faint);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: color 200ms ease;
+}
+
+.hero__scroll:hover {
+  color: var(--amber);
+}
+
+.hero__scroll-arrow {
+  display: inline-block;
+  animation: nudge 1.8s ease-in-out infinite;
+}
+
+@keyframes nudge {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateY(4px);
+    opacity: 1;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Buttons
+------------------------------------------------------------------ */
+.btn {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.1rem;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: var(--step--1);
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 160ms ease, color 420ms ease, background 160ms ease,
+    transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Glare sweep lifted from React Bits' GlareHover: an angled gradient that is
+   larger than the element, moved across it by shifting background-position.
+   The component itself is a fixed-size card wrapper with its own background
+   and border, so wrapping every button in one would fight the button styles;
+   the technique is the useful part. */
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* currentColor, so the sweep is amber while the button is amber and grey
+     again on the way out: a fixed amber glare kept sweeping across a button
+     that had already gone back to grey */
+  background: linear-gradient(
+    -30deg,
+    transparent 60%,
+    currentColor 70%,
+    transparent 80%,
+    transparent 100%
+  );
+  opacity: 0.3;
+  background-size: 260% 260%;
+  background-repeat: no-repeat;
+  background-position: -100% -100%;
+  transition: background-position 700ms ease;
+  pointer-events: none;
+}
+
+.btn:hover::before {
+  background-position: 100% 100%;
+}
+
+/* the primary button turns solid amber on hover, and its text goes dark, so
+   currentColor would sweep a shadow across it: light instead, but only while
+   hovered, so leaving still sweeps its resting amber */
+.btn--primary:hover::before {
+  background: linear-gradient(
+    -30deg,
+    transparent 60%,
+    rgba(255, 250, 240, 0.75) 70%,
+    transparent 80%,
+    transparent 100%
+  );
+  background-size: 260% 260%;
+  background-repeat: no-repeat;
+  /* the shorthand above resets background-position to 0% 0%, which parked the
+     sweep in the middle of the button: restate the end position */
+  background-position: 100% 100%;
+  opacity: 0.6;
+}
+
+.btn:hover {
+  border-color: var(--amber-dim);
+  color: var(--amber);
+  background: var(--amber-glow);
+  transform: translateY(-2px);
+}
+
+.btn:active {
+  transform: translateY(0) scale(0.985);
+}
+
+.icon {
+  flex: 0 0 auto;
+  /* optical: the glyphs read a touch large next to mono text at the same size */
+  font-size: 0.9em;
+  transform: translateY(0.02em);
+}
+
+.contact__list .icon,
+.project__links .icon {
+  opacity: 0.7;
+}
+
+.contact__row a:hover .icon {
+  opacity: 1;
+}
+
+.btn--primary {
+  border-color: var(--amber-dim);
+  color: var(--amber);
+}
+
+.btn--primary:hover {
+  background: var(--amber);
+  color: #12100d;
+}
+
+/* ------------------------------------------------------------------
+   About
+------------------------------------------------------------------ */
+.about {
+  display: grid;
+  grid-template-columns: 14rem minmax(0, 1fr);
+  gap: 2.5rem;
+  align-items: start;
+}
+
+.about__side {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.about__photo {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: auto;
+  background: var(--bg-raised);
+}
+
+/* Lead paragraph carries the section: bigger, brighter, short. The rest
+   drops back to body size so the block has a shape instead of three
+   identical grey slabs. */
+.about__lead {
+  font-size: var(--step-1);
+  line-height: 1.5;
+  color: var(--text);
+  margin-bottom: 1.35rem;
+}
+
+.about p:not(.about__lead) {
+  color: var(--text-dim);
+  font-size: var(--step--1);
+}
+
+/* Facts run as a strip under both columns rather than stacked beside the
+   photo, where four rows left the column hanging far below the text. */
+.facts {
+  grid-column: 1 / -1;
+  margin: 0.5rem 0 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.5rem;
+  padding-top: 1.1rem;
+  border-top: 1px dashed var(--line-soft);
+  font-size: var(--step--1);
+}
+
+.facts__row {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.facts__key {
+  color: var(--text-faint);
+}
+
+.facts__val {
+  margin: 0;
+  color: var(--text);
+}
+
+@media (max-width: 720px) {
+  /* A small portrait on a row of its own left dead space beside it, and
+     floating the text around it squeezed the lead to a dozen characters per
+     line. The facts go next to the photo instead: the gap gets filled with
+     something worth reading and the prose keeps full width. */
+  .about {
+    grid-template-columns: 8.5rem minmax(0, 1fr);
+    grid-template-areas:
+      'photo facts'
+      'text  text';
+    gap: 1.5rem 1.25rem;
+  }
+
+  .about__side {
+    grid-area: photo;
+  }
+
+  .about__text {
+    grid-area: text;
+  }
+
+  .facts {
+    grid-area: facts;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.7rem;
+    margin: 0;
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .about__lead {
+    font-size: var(--step-0);
+  }
+}
+
+
+
+/* ------------------------------------------------------------------
+   Projects: the heaviest block on the page. Numbered, wider than the
+   other sections, media on alternating sides so the eye keeps moving.
+------------------------------------------------------------------ */
+.projects {
+  display: grid;
+  gap: 6rem;
+}
+
+.project {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  grid-template-areas:
+    'header header'
+    'media body';
+  gap: 1.75rem 2.5rem;
+  align-items: start;
+  padding-top: 2rem;
+  /* softer than the rule between sections: these are items within one */
+  border-top: 1px dashed var(--line-soft);
+}
+
+/* Media swaps sides on every second project. */
+.project:nth-child(even) {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.45fr);
+  grid-template-areas:
+    'header header'
+    'body media';
+}
+
+.project__header {
+  grid-area: header;
+  display: flex;
+  align-items: baseline;
+  gap: 1.25rem;
+}
+
+.project__index {
+  font-size: var(--step-2);
+  font-weight: 700;
+  color: var(--amber-deep);
+  line-height: 1;
+}
+
+.project__media {
+  grid-area: media;
+}
+
+.project__body {
+  grid-area: body;
+}
+
+.project__name {
+  font-size: var(--step-3);
+  line-height: 1;
+}
+
+.project__meta {
+  display: block;
+  font-size: var(--step--1);
+  color: var(--text-faint);
+  margin-top: 0.45rem;
+}
+
+/* --- gallery --- */
+.gallery {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.shot-card {
+  /* neutralises PixelCard's fixed 300x400 box. No aspect-ratio on purpose:
+     the frame takes the shape of the screenshot instead of cropping it. */
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: auto;
+  border-radius: 2px;
+  border-color: var(--line);
+  padding: 9px;
+  place-items: initial;
+  background: var(--bg);
+}
+
+.shot-stack {
+  position: relative;
+  z-index: 1;
+  display: grid;
+}
+
+/* all shots occupy the same grid cell, so the first one sets the height and
+   the rest sit exactly on top of it */
+.project__shot {
+  grid-area: 1 / 1;
+  display: block;
+  width: 100%;
+  height: auto;
+  opacity: 0;
+  transition: opacity 420ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.project__shot.is-active {
+  opacity: 1;
+}
+
+.project__media > [data-parallax] {
+  will-change: transform;
+}
+
+.gallery__thumbs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+}
+
+.gallery__thumb {
+  padding: 0;
+  border: 1px solid var(--line);
+  background: var(--bg-raised);
+  cursor: pointer;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  opacity: 0.4;
+  filter: saturate(0.5);
+  transition: opacity 260ms ease, border-color 260ms ease, filter 260ms ease,
+    transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.gallery__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gallery__thumb:hover,
+.gallery__thumb:focus-visible {
+  opacity: 0.85;
+  filter: none;
+}
+
+.gallery__thumb.is-active {
+  opacity: 1;
+  filter: none;
+  border-color: var(--amber-dim);
+  transform: translateY(-2px);
+}
+
+/* --- copy --- */
+.project__summary {
+  color: var(--text);
+  margin-bottom: 0.9rem;
+}
+
+.project__points {
+  list-style: none;
+  margin: 0 0 1.1rem;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+  color: var(--text-dim);
+  font-size: var(--step--1);
+}
+
+.project__points li {
+  padding-left: 1.1rem;
+  position: relative;
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: opacity 420ms ease, transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.project__body.is-visible .project__points li {
+  opacity: 1;
+  transform: none;
+}
+
+.project__body.is-visible .project__points li:nth-child(1) {
+  transition-delay: 120ms;
+}
+
+.project__body.is-visible .project__points li:nth-child(2) {
+  transition-delay: 220ms;
+}
+
+.project__body.is-visible .project__points li:nth-child(3) {
+  transition-delay: 320ms;
+}
+
+.project__points li::before {
+  content: '>';
+  position: absolute;
+  left: 0;
+  color: var(--amber-deep);
+}
+
+.project__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.project__tag {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  border: 1px solid var(--line);
+  padding: 0.1rem 0.45rem;
+  transition: border-color 200ms ease, color 200ms ease, transform 260ms ease;
+}
+
+.project:hover .project__tag:nth-child(2) {
+  transform: translateY(-1px);
+}
+
+.project:hover .project__tag {
+  border-color: var(--amber-deep);
+  color: var(--amber-dim);
+}
+
+.project__links {
+  margin-top: 1.1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.photo-card {
+  /* same idea as .shot-card: the frame follows the photo, it does not crop it */
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: auto;
+  border-radius: 2px;
+  border-color: var(--line);
+  padding: 8px;
+  place-items: initial;
+  background: var(--bg);
+}
+
+.shot-card,
+.photo-card {
+  transition: border-color 220ms ease, transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.shot-card:hover,
+.photo-card:hover {
+  border-color: var(--amber-dim);
+  transform: translateY(-3px);
+}
+
+@media (max-width: 860px) {
+  .project,
+  .project:nth-child(even) {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'header'
+      'media'
+      'body';
+    gap: 1.25rem;
+  }
+
+  .projects {
+    gap: 4rem;
+  }
+
+  .project__name {
+    font-size: var(--step-2);
+  }
+}
+
+/* ------------------------------------------------------------------
+   Tool marquee
+------------------------------------------------------------------ */
+.toolloop {
+  position: relative;
+  overflow: hidden;
+  max-width: 100%;
+  padding: 1rem 0 0.5rem;
+  color: var(--text-dim);
+}
+
+/* min-width: 0 matters. The track inside is max-content wide, so any parent
+   that sizes itself to its content grows with it, which makes the marquee ask
+   for more copies, which makes it wider again. */
+.toolloop > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+
+.toolloop__logo {
+  display: inline-flex;
+  width: 1em;
+  height: 1em;
+}
+
+.toolloop__logo svg {
+  width: 100%;
+  height: 100%;
+}
+
+.toolloop .logoloop__node,
+.toolloop__logo {
+  color: var(--text-dim);
+  transition: color 200ms ease;
+}
+
+.toolloop .logoloop__link:hover .logoloop__node,
+.toolloop .logoloop__link:hover .toolloop__logo {
+  color: var(--amber);
+}
+
+/* ------------------------------------------------------------------
+   Contact + footer
+------------------------------------------------------------------ */
+.contact__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+  max-width: var(--measure);
+}
+
+.contact__row {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.contact__key {
+  color: var(--text-faint);
+  font-size: var(--step--1);
+  padding-top: 0.1rem;
+}
+
+.footer {
+  border-top: 1px solid var(--line-soft);
+  /* trailing space on purpose: without it the last section can never scroll
+     up far enough to reach the scroll-spy band */
+  /* keep .shell's horizontal padding: the shorthand would drop it and the
+     footer would sit 24px left of every other block */
+  padding: 2rem 1.5rem 18vh;
+  color: var(--text-faint);
+  font-size: var(--step--1);
+}
+
+.footer__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem 1.5rem;
+  flex-wrap: wrap;
+}
+
+.footer__top {
+  color: var(--text-faint);
+  text-decoration: none;
+  transition: color 200ms ease;
+}
+
+.footer__top:hover {
+  color: var(--amber);
+}
+
+.footer__prompt {
+  margin: 1.75rem 0 0;
+  color: var(--text-faint);
+}
+
+.footer__prompt .caret {
+  width: 0.5em;
+  height: 0.95em;
+  background: var(--amber-deep);
+}
+
+@media (max-width: 560px) {
+  .footer__built {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Motion
+------------------------------------------------------------------ */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 620ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 620ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* headings come up with a short phosphor flicker rather than a plain fade,
+   which is the one place the CRT idea can show up away from the hero */
+.section__title.reveal.is-visible {
+  animation: phosphor 620ms steps(1) 1;
+}
+
+@keyframes phosphor {
+  0% {
+    opacity: 0.2;
+  }
+  12% {
+    opacity: 0.9;
+  }
+  20% {
+    opacity: 0.35;
+  }
+  32% {
+    opacity: 1;
+  }
+  40% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Hero is above the fold, so it plays on load instead of on scroll. */
+.hero__inner > * {
+  opacity: 0;
+  transform: translateY(14px);
+  animation: rise 700ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.hero__name {
+  animation-delay: 120ms;
+}
+
+.hero__role {
+  animation-delay: 260ms;
+}
+
+.hero__blurb {
+  animation-delay: 360ms;
+}
+
+.hero__actions {
+  animation-delay: 460ms;
+}
+
+@keyframes rise {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.caret {
+  display: inline-block;
+  width: 0.55em;
+  height: 1.05em;
+  background: var(--amber);
+  vertical-align: -0.15em;
+  margin-left: 0.15em;
+  animation: blink 1.1s steps(1) infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .project__shot {
+    transform: none !important;
+  }
+
+  .hero__scroll-arrow,
+  .section__title.reveal.is-visible {
+    animation: none !important;
+  }
+
+  .btn::before {
+    display: none;
+  }
+
+  .shine {
+    animation: none;
+  }
+
+  .project__points li {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .reveal,
+  .hero__inner > * {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+
+  .caret {
+    animation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+  }
+}
