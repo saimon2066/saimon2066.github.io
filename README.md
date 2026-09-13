@@ -1,3 +1,5 @@
+> This portfolio site was made using AI. The projects, texts and images were not. Go check out my other repositories.
+
 # saimon2066 portfolio
 
 Personal portfolio site. React + Vite, no framework beyond that, deployed to GitHub Pages.
@@ -105,10 +107,11 @@ which writes the two smaller files beside it. Dense detail (the wireframe shot) 
 in size, so check the full-size file is not over a few hundred kB and drop quality if it
 is.
 
-`public/images/placeholder-photo.svg` is still a blank white stand-in for the portrait
-in the about section. Replace the file and update the `src` in `src/sections/About.jsx`. Use a 4:5 portrait; it renders greyscale, so contrast matters
-more than colour, and it is small on screen so a tight crop of the head and shoulders
-works better than a full body shot. Whatever ratio you give it, the frame follows.
+`public/images/photo.webp` is a blank white stand-in for the portrait in the about
+section. Overwrite that one file with the real photo and nothing else needs touching.
+Use a 4:5 crop around 600px wide; it is small on screen, so a tight crop of head and
+shoulders works better than a full body shot. Whatever ratio you give it, the frame
+follows.
 
 ## Structure
 
@@ -156,9 +159,11 @@ it, so nothing has to be scaled up and cropped to hide the edges.
 Section headings scramble into place the first time they are seen (`Scramble.jsx`, with
 unsettled characters tinted so the churn is visible) and
 flicker on like a phosphor tube. The nav link plus the `~/path` rail light up for
-whichever section is crossing the middle of the viewport (`ActiveSection.jsx`: one
-observer with a `-45%` band top and bottom, and when two sections touch that band at
-once the one filling more of it wins, which is what makes the last section reachable).
+whichever section is crossing a narrow band across the upper third of the viewport
+(`ActiveSection.jsx`: one observer with `-15%` and `-70%` margins, and when two sections
+touch that band at once the one filling more of it wins). The band sits high rather than
+centred because clicking a nav link parks a section at the top of the screen, and a
+centred band would then highlight the section after it.
 Two spots are ambiguous from geometry alone and are handled explicitly in
 `ActiveSection.jsx`: at maximum scroll the last section is forced active (nothing can
 scroll further, so the band may still sit on the section above it), and clicking any
@@ -202,9 +207,7 @@ stutter), reads its refs inside the resize effect instead of taking an array lit
 a dependency (which rebuilt both ResizeObservers on every render), and caps its copy
 count at 12. Anything wrapping it needs `min-width: 0`: the track is max-content wide,
 so a parent that sizes to its content grows with it, asks for more copies, and grows
-again. Without
-the cap, a parent that sizes itself to content and a track that grows with the copy
-count feed each other and stretch the page sideways forever.
+again. Without the cap those two feed each other and stretch the page sideways forever.
 
 The hero shader fades its cells in over two seconds on load. If that ever reads as slow,
 it is the animation and not the loading: on a production build the canvas is painted
