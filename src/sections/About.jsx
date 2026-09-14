@@ -50,7 +50,7 @@ export default function About() {
             </p>
             <p>
               I was always fascinated by computers and programming in general, which is how I found my
-              way to Skyro. I also enjoy watching movies, space, and coding.
+              way to Skyro. I also enjoy amateur astronomy, tech and coding.
             </p>
             <p>
               I'm also studying 3D and sound design, so I work with Blender and Reaper at school, but
